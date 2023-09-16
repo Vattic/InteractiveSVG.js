@@ -397,13 +397,14 @@ var InteractiveSVG = (function() {
      *  Main object for the whole SVG.
     **************************************************/
 
-    var InteractiveSVG = function($container, width, height) {
+    var InteractiveSVG = function($container, width = 400, height = 400) {
         this.$svg = $(document.createElementNS(xmlns, 'svg'));
         this.$svg.attr({
             xmlns: xmlns,
             class: 'interactiveSVG',
-            width: width || 400,
-            height: height || 400,
+            width: width,
+            height: height,
+            viewBox: '-0.5 -0.5 ' + width + ' ' + height
         }).appendTo($container);
 
         this.elements = {};
