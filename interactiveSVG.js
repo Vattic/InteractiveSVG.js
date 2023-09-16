@@ -1,3 +1,5 @@
+Math.clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+
 function lineLineIntersection(line1, line2) {
     // Lines as vectors
     var dx1 = line1.p2.x - line1.p1.x;
@@ -182,7 +184,7 @@ var InteractiveSVG = (function() {
             y: function(el, value) { el.attr('cy', value); }
         };
 
-        SVGElement.call(this, svgObject, attributes);
+        SVGElement.call(this, svgObject, attributes, ['bounds']);
      
         // Set attributes
         this._setAttrIfNotYetSet({
@@ -452,26 +454,33 @@ var InteractiveSVG = (function() {
     InteractiveSVG.prototype._addMouseEventHandlers = function() {
         var self = this;
 
-        this.$svg.on('mousemove', function(evt) {
+        $(document).on('mousemove', function(evt) {
             if (self.selected) {
                 evt.preventDefault();
 
                 // Get dragging to work on touch device
                 if (evt.type === 'touchmove') { evt = evt.touches[0]; }
 
-                // Move based on change in mouse position
-                self.selected.translate(
-                    evt.clientX - self.dragX,
-                    evt.clientY - self.dragY
-                );
+                // Get current mouse position relative to the svg
+                var newX = evt.pageX - self.$svg.offset().left;
+                var newY = evt.pageY - self.$svg.offset().top;
 
-                // Update mouse position
-                self.dragX = evt.clientX;
-                self.dragY = evt.clientY;
+                // if bounds are given clamp position to within those bounds
+                if (self.selected.bounds) {
+                    let bounds = self.selected.bounds;
+                    newX = Math.clamp(newX, bounds.x1, bounds.x2);
+                    newY = Math.clamp(newY, bounds.y1, bounds.y2);
+                }
+
+                // Move based on current mouse position
+                self.selected.update({
+                    x: newX,
+                    y: newY
+                });
             }
         });
 
-        this.$svg.on('mouseup', function() {
+        $(document).on('mouseup', function() {
             self.selected = false;
         });
     };
