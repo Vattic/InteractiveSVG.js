@@ -91,6 +91,9 @@ var InteractiveSVG = (function() {
 
         this.proxyAttributes = this.proxyAttributes || {};
 
+        // Array of object to update when this is updated
+        this.dependents = [];
+
         // Map attributes that this object to list of objects that share that attribute
         this.linkedAttributes = {};
 
@@ -110,6 +113,12 @@ var InteractiveSVG = (function() {
         if (this.label) { svgObject.elements[this.label] = this; }
     };
 
+    // Make this element dependent on another with an update function
+    SVGElement.prototype.addDependency = function(controlObjects, updateFunction) {
+        this.svg.addDependency(this, controlObjects, updateFunction);
+        return this;
+    };
+
     // Update the object with a key, value map of attributes
     SVGElement.prototype.update = function(attributes) {
         // Update linked attributes
@@ -123,6 +132,11 @@ var InteractiveSVG = (function() {
                 for (var i = 0; i < linkedAttributes.length; i++) {
                     this.linkedAttributes[attributeName][i](value);
                 }
+            }
+        }
+        if (this.dependents) {
+            for (var i = 0; i < this.dependents.length; i++) {
+                this.dependents[i]();
             }
         }
     };
@@ -225,11 +239,10 @@ var InteractiveSVG = (function() {
     **************************************************/
 
     var InteractiveBezier = function(svgObject, attributes) {
-        this.tagName = "path";
-        this.addBelow = true;
+        this.$element = svgObject.addElementToBottom('path');
         var reservedAttributes = ['label', 'p1', 'p2', 'p3', 'p4', 'showHandles'];
 
-        SVGElement.call(this, svgObject, reservedAttributes, attributes);
+        SVGElement.call(this, svgObject, attributes, reservedAttributes);
         
         this.p1 = svgObject.getElement(this.p1);
         this.p2 = svgObject.getElement(this.p2);
@@ -487,6 +500,36 @@ var InteractiveSVG = (function() {
         } else {
             return label;
         }
+    };
+
+    // Make dependentObject depend on controlObjects, so when controlObjects is updated, 
+    // dependentObject is also updated, sending the result of the updateFunction
+    InteractiveSVG.prototype.addDependency = function(dependentObject, controlObjects, updateFunction) {
+        var getElement = this.getElement.bind(this);
+        dependentObject = getElement(dependentObject);
+
+        // Ensure controlObject is an array of objects
+        if (!Array.isArray(controlObjects)) {
+            controlObjects = [getElement(controlObjects)];
+        } else {
+            controlObjects = controlObjects.map(function(element) {
+                return getElement(element);
+            });
+        }
+
+        var updateDependentObject = function() {
+            dependentObject.update(updateFunction.apply(dependentObject, controlObjects));
+        };
+
+        // If point is an InteractiveSVG object, then make the parent dependent on it
+        for (var i = 0; i < controlObjects.length; i++) {
+            var dependentsArray = controlObjects[i].dependents;
+            if (dependentsArray) {
+                dependentsArray.push(updateDependentObject);
+            }
+        }
+
+        updateDependentObject();
     };
 
     // Link two attributes of two objects so they have the same value and maintain the same value
