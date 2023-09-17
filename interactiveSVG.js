@@ -1,14 +1,5 @@
 Math.clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
-function getMousePosition(evt) {
-    let svg = evt.target;
-    var CTM = svg.getScreenCTM();
-    return {
-      x: (evt.clientX - CTM.e) / CTM.a,
-      y: (evt.clientY - CTM.f) / CTM.d
-    };
-  }
-
 function lineLineIntersection(line1, line2) {
     // Lines as vectors
     var dx1 = line1.p2.x - line1.p1.x;
