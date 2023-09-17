@@ -1,5 +1,14 @@
 Math.clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
+function getMousePosition(evt) {
+    let svg = evt.target;
+    var CTM = svg.getScreenCTM();
+    return {
+      x: (evt.clientX - CTM.e) / CTM.a,
+      y: (evt.clientY - CTM.f) / CTM.d
+    };
+  }
+
 function lineLineIntersection(line1, line2) {
     // Lines as vectors
     var dx1 = line1.p2.x - line1.p1.x;
@@ -242,9 +251,9 @@ var InteractiveSVG = (function() {
 
     var InteractiveBezier = function(svgObject, attributes) {
         this.$element = svgObject.addElementToBottom('path');
-        var reservedAttributes = ['label', 'p1', 'p2', 'p3', 'p4', 'showHandles'];
+        var hiddenAttributes = ['label', 'p1', 'p2', 'p3', 'p4', 'showHandles'];
 
-        SVGElement.call(this, svgObject, attributes, reservedAttributes);
+        SVGElement.call(this, svgObject, attributes, hiddenAttributes);
         
         this.p1 = svgObject.getElement(this.p1);
         this.p2 = svgObject.getElement(this.p2);
@@ -297,9 +306,9 @@ var InteractiveSVG = (function() {
     var InteractiveCircle = function(svgObject, attributes) {
         this.tagName = 'circle';
         this.addBelow = true;
-        var reservedAttributes = ['label', 'x', 'y', 'center', 'r'];
+        var hiddenAttributes = ['label', 'x', 'y', 'center', 'r'];
 
-        SVGElement.call(this, svgObject, reservedAttributes, attributes);
+        SVGElement.call(this, svgObject, attributes, hiddenAttributes);
 
         // Center can be defined by a center attribute, (x, y) attributes or (cx, cy) attributes
         if (this.center) {
@@ -466,6 +475,10 @@ var InteractiveSVG = (function() {
                 var newX = evt.pageX - self.$svg.offset().left;
                 var newY = evt.pageY - self.$svg.offset().top;
 
+                // Adjust for offset from center
+                newX -= self.offset.x;
+                newY -= self.offset.y;
+
                 // if bounds are given clamp position to within those bounds
                 if (self.selected.bounds) {
                     let bounds = self.selected.bounds;
@@ -490,6 +503,14 @@ var InteractiveSVG = (function() {
         var self = this;
         element.$element.on('mousedown', function(evt) {
             self.selected = element;
+
+            // offset from centre when clicked
+            let offset = {'x': 0, 'y': 0};
+            offset.x = evt.pageX - self.$svg.offset().left;
+            offset.y = evt.pageY - self.$svg.offset().top;
+            offset.x -= self.selected.x;
+            offset.y -= self.selected.y;
+            self.offset = offset;
 
             // Get dragging to work on touch device
             if (evt.type === 'touchstart') { evt = evt.touches[0]; }
