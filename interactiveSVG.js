@@ -41,7 +41,7 @@ function defineCircleFromThreePoints(p1, p2, p3) {
 
     var cross = dx2 * dy1 - dy2 * dx1;
 
-    // If points are colinear(ish), we have a line.
+    // If points are collinear(ish), we have a line.
     if (Math.abs(cross) < 0.01) {
         var d = Math.sqrt(dx1 * dx1 + dy1 * dy1);
         // TODO: improve how points are picked
@@ -295,9 +295,14 @@ var InteractiveSVG = (function() {
     **************************************************/
 
     var InteractiveCircle = function(svgObject, attributes) {
-        this.tagName = 'circle';
-        this.addBelow = true;
-        var hiddenAttributes = ['label', 'x', 'y', 'center', 'r'];
+        this.$element = svgObject.addElementToBottom('circle');
+        var hiddenAttributes = ['label', 'x', 'y', 'center', 'rp'];
+
+        // if a point is passed as r it is saved in rp
+        if (isNaN(attributes.r)) {
+            attributes.rp = attributes.r;
+            attributes.r = 0;
+        }
 
         SVGElement.call(this, svgObject, attributes, hiddenAttributes);
 
@@ -316,21 +321,22 @@ var InteractiveSVG = (function() {
         });
 
         // Radius can be a number or determined by a points
-        if (isNaN(this.r)) {
-            this.r = svgObject.getElement(this.r);
+        if (this.rp !== undefined) {
+            this.rp = svgObject.getElement(this.rp);
 
             // Radius of the circle is dependent on point this.r
-            this.addDependency(this.r, function(radiusPoint) {
+            this.addDependency(this.rp, function(radiusPoint) {
                 radiusPoint.dx = radiusPoint.x - this.center.x;
                 radiusPoint.dy = radiusPoint.y - this.center.y;
                 return { r: Math.sqrt(radiusPoint.dx * radiusPoint.dx + radiusPoint.dy * radiusPoint.dy) };
             });
 
             // Move the radius point when the center is moved
-            this.r.addDependency(this.center, function(center) {
-                return { cx: center.x + this.dx, cy: center.y + this.dy };
+            this.rp.addDependency(this.center, function(center) {
+                return { x: center.x + this.dx, y: center.y + this.dy };
             });
-        } else {
+        }
+        else {
             this.update({ r: this.r });
         }
 
