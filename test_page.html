@@ -72,7 +72,7 @@
                     if (intersection) {
                         L1.$element.attr("class", "line highlight-line");
                         L2.$element.attr("class", "line highlight-line");
-                        return { x: intersection.x, y: intersection.y, visibility: 'visible' };
+                        return { cx: intersection.x, cy: intersection.y, visibility: 'visible' };
                     } else {
                         L1.$element.attr("class", "line controllable-line");
                         L2.$element.attr("class", "line controllable-line");

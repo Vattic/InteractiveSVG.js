@@ -317,7 +317,7 @@ var InteractiveSVG = (function() {
         if (this.rp !== undefined) {
             this.rp = svgObject.getElement(this.rp);
 
-            // Radius of the circle is dependent on point this.r
+            // Radius of the circle is dependent on point this.rp
             this.addDependency(this.rp, function(radiusPoint) {
                 radiusPoint.dx = radiusPoint.x - this.center.x;
                 radiusPoint.dy = radiusPoint.y - this.center.y;
