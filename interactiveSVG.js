@@ -136,6 +136,7 @@ var InteractiveSVG = (function() {
                 }
             }
         }
+
         if (this.dependents) {
             for (var i = 0; i < this.dependents.length; i++) {
                 this.dependents[i]();
@@ -207,9 +208,17 @@ var InteractiveSVG = (function() {
 
         SVGElement.call(this, svgObject, attributes, ['p1', 'p2']);
 
-        // Create points
-        this.addPoint(svgObject, 1);
-        this.addPoint(svgObject, 2);
+        if (this.p1) {
+            this.addDependency(this.p1, function(p) {
+                return { x1: p.x, y1: p.y };
+            });
+        }
+    
+        if (this.p2) {
+            this.addDependency(this.p2, function(p) {
+                return { x2: p.x, y2: p.y };
+            });
+        }
 
         // Set class
         var className = ((this.p1 && this.p1.draggable) || (this.p2 && this.p2.draggable)) ? "controllable-line" : "static-line";
@@ -217,22 +226,6 @@ var InteractiveSVG = (function() {
         this.$element.addClass("line");
     };
     InteractiveLine.prototype = Object.create(SVGElement.prototype);
-
-    InteractiveLine.prototype.addPoint = function(svgObject, n) {
-        var p = 'p' + n;
-
-        if (this[p]) {
-            p = svgObject.getElement(this[p]);
-            this[p] = p;
-            if (p instanceof SVGElement) {
-                svgObject.linkAttributes(this, 'x' + n, p, 'x');
-                svgObject.linkAttributes(this, 'y' + n, p, 'y');
-            } else {
-                this.updateAttribute('x' + n, p.x || 0);
-                this.updateAttribute('y' + n, p.y || 0);
-            }
-        }
-    };
 
     /*************************************************
      *      InteractiveBezier

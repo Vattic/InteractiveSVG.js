@@ -72,7 +72,7 @@
                     if (intersection) {
                         L1.$element.attr("class", "line highlight-line");
                         L2.$element.attr("class", "line highlight-line");
-                        return { cx: intersection.x, cy: intersection.y, visibility: 'visible' };
+                        return { x: intersection.x, y: intersection.y, visibility: 'visible' };
                     } else {
                         L1.$element.attr("class", "line controllable-line");
                         L2.$element.attr("class", "line controllable-line");
@@ -195,7 +195,7 @@
             if (t >= 0 && t <= 1) {
                 var x = B.x + t * dx;
                 var y = B.y + t * dy;
-                I1.update({cx: x, cy: y, visibility: 'visble'});
+                I1.update({cx: x, cy: y, visibility: 'visible'});
             } else {
                 I1.update({visibility: 'hidden'});
             }
@@ -204,7 +204,7 @@
             if (t >= 0 && t <= 1) {
                 var x = B.x + t * dx;
                 var y = B.y + t * dy;
-                I2.update({cx: x, cy: y, visibility: 'visble'});
+                I2.update({cx: x, cy: y, visibility: 'visible'});
             } else {
                 I2.update({visibility: 'hidden'});
             }
